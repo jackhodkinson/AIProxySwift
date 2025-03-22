@@ -268,6 +268,7 @@ public enum AnthropicInputContent: Encodable {
     case pdf(data: String)
     case text(String)
     case toolResult(toolUseId: String, content: String, isError: Bool = false)
+    case toolUse(id: String, name: String, input: [String: Any])
 
 
     private enum CodingKeys: String, CodingKey {
@@ -278,6 +279,9 @@ public enum AnthropicInputContent: Encodable {
         case toolUseId = "tool_use_id"
         case content
         case isError = "is_error"
+        case id
+        case name
+        case input
     }
 
     private enum SourceCodingKeys: String, CodingKey {
@@ -311,6 +315,15 @@ public enum AnthropicInputContent: Encodable {
             if isError {
                 try container.encode(isError, forKey: .isError)
             }
+        case .toolUse(id: let id, name: let name, input: let input):
+            try container.encode("tool_use", forKey: .type)
+            try container.encode(id, forKey: .id)
+            try container.encode(name, forKey: .name)
+            
+            // For the input, we need to handle encoding the dictionary to JSON
+            let inputData = try JSONSerialization.data(withJSONObject: input)
+            let inputString = String(data: inputData, encoding: .utf8)!
+            try container.encode(inputString, forKey: .input)
         }
     }
 }
