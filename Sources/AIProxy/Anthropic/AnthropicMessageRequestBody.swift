@@ -267,12 +267,17 @@ public enum AnthropicInputContent: Encodable {
     case image(mediaType: AnthropicImageMediaType, data: String)
     case pdf(data: String)
     case text(String)
+    case toolResult(toolUseId: String, content: String, isError: Bool = false)
+
 
     private enum CodingKeys: String, CodingKey {
         case image
         case source
         case text
         case type
+        case toolUseId = "tool_use_id"
+        case content
+        case isError = "is_error"
     }
 
     private enum SourceCodingKeys: String, CodingKey {
@@ -299,6 +304,13 @@ public enum AnthropicInputContent: Encodable {
         case .text(let txt):
             try container.encode("text", forKey: .type)
             try container.encode(txt, forKey: .text)
+        case .toolResult(toolUseId: let toolUseId, content: let content, isError: let isError):
+            try container.encode("tool_result", forKey: .type)
+            try container.encode(toolUseId, forKey: .toolUseId)
+            try container.encode(content, forKey: .content)
+            if isError {
+                try container.encode(isError, forKey: .isError)
+            }
         }
     }
 }
